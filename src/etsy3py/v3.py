@@ -478,6 +478,18 @@ class EtsyApi(BaseApiClient):
         }
         r = self._get(path=path, params=params, auth_type='token')
         return r
+        
+      def get_shop_sections(self, shop_id: int) -> requests.Response:
+        """
+        Retrieves the list of shop sections in a specific shop identified by shop ID.
+        https://developers.etsy.com/documentation/reference#operation/getShopSections
+
+        :param shop_id: int - the unique positive non-zero numeric ID for an Etsy Shop        
+        :return: requests.Response
+        """
+        path = f"/v3/application/shops/{shop_id}/sections"
+        r = self._get(path=path, auth_type='token')
+        return r      
 
     def get_listing_offering(self, listing_id: int, product_id: int, product_offering_id: int) -> requests.Response:
         """
