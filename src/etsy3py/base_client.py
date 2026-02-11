@@ -5,7 +5,7 @@ from requests import Request, Session
 
 class BaseApiClient:
     # Etsy docs: базовый домен для v3 — api.etsy.com
-    base_url = "https://api.etsy.com/v3"
+    base_url = "https://api.etsy.com"
 
     def __init__(
         self,
