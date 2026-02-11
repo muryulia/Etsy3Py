@@ -6,14 +6,14 @@ from etsy3py.base_client import BaseApiClient
 
 
 class EtsyApi(BaseApiClient):
-    def __init__(self, access_token: str, client_id: str, token_type: Optional[str] = 'Bearer') -> None:
+    def __init__(self, access_token: str, client_id: str, shared_secret: str, token_type: Optional[str] = 'Bearer') -> None:
         """
         Initialize EtsyApi.
         :param access_token: str - user access token
         :param client_id: str - client id, from ETSY developer platform
         :param token_type: str - default: bearer, token type
         """
-        super().__init__(access_token, client_id, token_type)
+        super().__init__(access_token, client_id, shared_secret, token_type)
 
     def get_me(self) -> requests.Response:
         """
