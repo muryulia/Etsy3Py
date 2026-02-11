@@ -167,7 +167,7 @@ class EtsyApi(BaseApiClient):
         :key offset: int - default: 0, the number of records to skip before selecting the first result
         :return: requests.Response
         """
-        path = f"https://openapi.etsy.com/v3/application/shops/{shop_id}/transactions"
+        path = f"/v3/application/shops/{shop_id}/transactions"
         params = {**kwargs}
         r = self._get(path=path, params=params, auth_type='token')
         return r
@@ -185,7 +185,7 @@ class EtsyApi(BaseApiClient):
         :key show_deleted: bool - default: False, a boolean value for inventory whether to include deleted products and their offerings
         :return: requests.Response
         """
-        path = f"https://openapi.etsy.com/v3/application/listings/{listing_id}/inventory"
+        path = f"/v3/application/listings/{listing_id}/inventory"
         params = {**kwargs}
         r = self._get(path=path, params=params, auth_type='token')
         return r
