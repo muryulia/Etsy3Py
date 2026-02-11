@@ -14,7 +14,7 @@ class EtsyApi(BaseApiClient):
         :param shared_secret: str - client secret, from ETSY developer platform
         :param token_type: str - default: bearer, token type
         """
-        super().__init__(access_token, client_id, shared_secret, token_type)
+        super().__init__(token=access_token, client_id=client_id, shared_secret=shared_secret, token_type=token_type)
 
     def get_me(self) -> requests.Response:
         """
