@@ -1,6 +1,6 @@
 # Etsy3Py
 
-Client for Etsy API v3 (Python).
+Etsy API v3 Python client for shops: receipts, transactions, listings, and inventory, with OAuth2 (PKCE) authentication.
 
 ## Installation
 
