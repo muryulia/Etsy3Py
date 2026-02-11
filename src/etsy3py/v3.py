@@ -11,6 +11,7 @@ class EtsyApi(BaseApiClient):
         Initialize EtsyApi.
         :param access_token: str - user access token
         :param client_id: str - client id, from ETSY developer platform
+        :param shared_secret: str - client secret, from ETSY developer platform
         :param token_type: str - default: bearer, token type
         """
         super().__init__(access_token, client_id, shared_secret, token_type)
