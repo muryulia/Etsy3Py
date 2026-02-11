@@ -67,6 +67,58 @@ print(response.status_code)
 print(response.json())
 ```
 
+## Available methods (high level)
+
+### User
+- `get_me()`
+
+### Orders / Receipts
+- `get_shop_receipts(shop_id, **filters)` — list receipts (date filters + paging)
+- `get_shop_receipt(shop_id, receipt_id)` — get a single receipt
+- `get_shop_receipt_transactions_by_receipt(shop_id, receipt_id)` — receipt line items
+- `update_shop_receipt(shop_id, receipt_id, was_shipped=..., was_paid=...)`
+- `create_receipt_shipment(shop_id, receipt_id, tracking_code=..., carrier_name=..., send_bcc=..., note_to_buyer=...)`
+
+### Listings
+- `get_listing(listing_id, **kwargs)`
+- `get_listings_by_shop(shop_id, **kwargs)`
+- `create_draft_listing(shop_id, **kwargs)`
+- `update_listing(shop_id, listing_id, **kwargs)`
+- `delete_listing(listing_id)`
+
+### Inventory
+- `get_listing_inventory(listing_id, **kwargs)`
+- `update_listing_inventory(listing_id, products, **kwargs)`
+
+## Example: fetch recent receipts (with dedup)
+
+```python
+from datetime import datetime, timedelta, timezone
+from etsy3py.v3 import EtsyApi
+
+etsy = EtsyApi(
+    access_token=access_token,
+    client_id=client_id,
+    shared_secret=shared_secret
+)
+
+shop_id = 123456789
+since = datetime.now(timezone.utc) - timedelta(days=3)
+min_created = int(since.timestamp())
+
+resp = etsy.get_shop_receipts(shop_id, min_created=min_created, limit=100, offset=0)
+resp.raise_for_status()
+
+data = resp.json()
+receipts = data.get("results", data)
+
+# Deduplicate by receipt_id (useful when running incremental syncs)
+unique = {r["receipt_id"]: r for r in receipts}
+receipts = list(unique.values())
+
+print("Receipts:", len(receipts))
+```
+
 ## Authentication
 
 The `EtsyApi` class uses OAuth 2.0 access tokens. You need to obtain an access token before making requests.  
