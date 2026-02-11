@@ -6,20 +6,43 @@ from requests import Request, Session
 class BaseApiClient:
     base_url = "https://openapi.etsy.com"
 
-    def __init__(self, token: str = None, client_id: str = None, token_type: str = None) -> None:
+    def __init__(
+        self,
+        token: str = None,
+        client_id: str = None,
+        shared_secret: str = None,
+        token_type: str = None,
+        x_api_key: str = None,   # опционально: можно передать готовую строку "client_id:secret"
+    ) -> None:
         self.__token_type = token_type
         self.__token = token
         self.__client_id = client_id
+        self.__shared_secret = shared_secret
+
+        # Приоритет: если передали x_api_key явно — используем его.
+        # Иначе пытаемся собрать из client_id + shared_secret.
+        self.__x_api_key = x_api_key or self._build_x_api_key()
+
         self.session = Session()
 
-    def _make_request(self,
-                      path: str,
-                      custom_base: str = None,
-                      method: str = 'GET',
-                      headers: dict = None,
-                      data: dict = None,
-                      params: dict = None,
-                      auth_type: str = 'token') -> requests.Response:
+    def _build_x_api_key(self) -> str | None:
+        if self.__client_id and self.__shared_secret:
+            return f"{self.__client_id}:{self.__shared_secret}"
+        if self.__client_id:
+            # Старый формат больше не подходит, но иногда удобно явно увидеть проблему
+            return self.__client_id
+        return None
+
+    def _make_request(
+        self,
+        path: str,
+        custom_base: str = None,
+        method: str = 'GET',
+        headers: dict = None,
+        data: dict = None,
+        params: dict = None,
+        auth_type: str = 'token'
+    ) -> requests.Response:
 
         if not headers:
             headers = {}
@@ -29,16 +52,27 @@ class BaseApiClient:
         auth = None
         if auth_type == 'basic':
             auth = HTTPBasicAuth(1, 1)
-        if auth_type == 'token':
-            headers['Authorization'] = f'{self.__token_type} {self.__token}'
-            headers['x-api-key'] = f'{self.__client_id}'
 
-        request = Request(method=method,
-                          url=request_url,
-                          headers=headers,
-                          data=data,
-                          params=params,
-                          auth=auth).prepare()
+        if auth_type == 'token':
+            if self.__token_type and self.__token:
+                headers['Authorization'] = f'{self.__token_type} {self.__token}'
+
+            if not self.__x_api_key:
+                raise ValueError(
+                    "x-api-key is not set. Provide shared_secret or x_api_key in format 'client_id:shared_secret'."
+                )
+
+            headers['x-api-key'] = self.__x_api_key
+
+        request = Request(
+            method=method,
+            url=request_url,
+            headers=headers,
+            data=data,
+            params=params,
+            auth=auth
+        ).prepare()
+
         response = self.session.send(request)
         return response
 
