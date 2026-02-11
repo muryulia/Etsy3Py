@@ -8,31 +8,27 @@ class EtsyOAuthClient(OAuth2Session):
     authorization_url_base = "https://www.etsy.com/oauth/connect"
     token_url_base = "https://api.etsy.com/v3/public/oauth/token"
 
-    """
-    The EtsyOAuthClient class is an authentication client for the ETSY marketplace
-    that allows users to connect to the API with OAuth2 authentication.
-    """
     def __init__(
-            self, client_id: str, client_secret: str, redirect_uri: Optional[str] = None,
-            scope: Optional[list[str]] = None, code_verifier: Optional[str] = None
+        self,
+        client_id: str,
+        client_secret: str,
+        redirect_uri: Optional[str] = None,
+        scope: Optional[list[str]] = None,
+        code_verifier: Optional[str] = None
     ) -> None:
-        """
-        Initializes a new instance of the EtsyOAuthClient class.
-
-        Parameters:
-        :param client_id: str - the client id obtained from the Etsy Developer Console.
-        :param client_secret: str - the client secret obtained from the Etsy Developer Console.
-        :param redirect_uri: str - the redirect URI registered with the Etsy Developer Console.
-        :param scope: list[str] - list of scopes you wish to request access to.
-        :param code_verifier: Optional[str] - the code verifier used in PKCE, defaults to None.
-        """
         super().__init__(
             client_id=client_id,
             redirect_uri=redirect_uri,
             scope=scope
         )
+
         self.auth = HTTPBasicAuth(client_id, client_secret)
         self.code_verifier = code_verifier or str(self._client.create_code_verifier(128))
+
+        # NEW: Etsy теперь требует keystring:secret в x-api-key
+        self.headers.update({
+            "x-api-key": f"{client_id}:{client_secret}",
+        })
 
     def authorization_url(self, **kwargs) -> (str, str):
         """
