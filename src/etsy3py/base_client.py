@@ -4,34 +4,21 @@ from requests import Request, Session
 
 
 class BaseApiClient:
-    base_url = "https://openapi.etsy.com"
+    # Etsy docs: базовый домен для v3 — api.etsy.com
+    base_url = "https://api.etsy.com/v3"
 
     def __init__(
         self,
         token: str = None,
         client_id: str = None,
         shared_secret: str = None,
-        token_type: str = None,
-        x_api_key: str = None,   # опционально: можно передать готовую строку "client_id:secret"
+        token_type: str = None
     ) -> None:
         self.__token_type = token_type
         self.__token = token
         self.__client_id = client_id
         self.__shared_secret = shared_secret
-
-        # Приоритет: если передали x_api_key явно — используем его.
-        # Иначе пытаемся собрать из client_id + shared_secret.
-        self.__x_api_key = x_api_key or self._build_x_api_key()
-
         self.session = Session()
-
-    def _build_x_api_key(self) -> str | None:
-        if self.__client_id and self.__shared_secret:
-            return f"{self.__client_id}:{self.__shared_secret}"
-        if self.__client_id:
-            # Старый формат больше не подходит, но иногда удобно явно увидеть проблему
-            return self.__client_id
-        return None
 
     def _make_request(
         self,
@@ -57,12 +44,10 @@ class BaseApiClient:
             if self.__token_type and self.__token:
                 headers['Authorization'] = f'{self.__token_type} {self.__token}'
 
-            if not self.__x_api_key:
-                raise ValueError(
-                    "x-api-key is not set. Provide shared_secret or x_api_key in format 'client_id:shared_secret'."
-                )
+            if not self.__client_id or not self.__shared_secret:
+                raise ValueError("Need client_id and shared_secret to build x-api-key = client_id:shared_secret")
 
-            headers['x-api-key'] = self.__x_api_key
+            headers['x-api-key'] = f'{self.__client_id}:{self.__shared_secret}'
 
         request = Request(
             method=method,
@@ -73,8 +58,7 @@ class BaseApiClient:
             auth=auth
         ).prepare()
 
-        response = self.session.send(request)
-        return response
+        return self.session.send(request)
 
     def _post(self, path: str, data: dict = None, headers: dict = None,
               auth_type: str = 'none') -> requests.Response:
